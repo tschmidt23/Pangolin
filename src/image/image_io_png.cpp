@@ -116,25 +116,54 @@ TypedImage LoadPng(std::istream& source)
     }
 
     //read the file
-    png_read_png(png_ptr, info_ptr, PNG_TRANSFORM_SWAP_ENDIAN, NULL);
+    const auto interlace_type = png_get_interlace_type(png_ptr,info_ptr);
 
-    if( png_get_interlace_type(png_ptr,info_ptr) != PNG_INTERLACE_NONE) {
-        throw std::runtime_error( "Interlace not yet supported" );
-    }
+    //if ( interlace_type == PNG_INTERLACE_NONE) {
 
-    const size_t w = png_get_image_width(png_ptr,info_ptr);
-    const size_t h = png_get_image_height(png_ptr,info_ptr);
-    const size_t pitch = png_get_rowbytes(png_ptr, info_ptr);
+      png_read_png(png_ptr, info_ptr, PNG_TRANSFORM_SWAP_ENDIAN, NULL);
 
-    TypedImage img(w, h, PngFormat(png_ptr, info_ptr), pitch);
+      const size_t w = png_get_image_width(png_ptr,info_ptr);
+      const size_t h = png_get_image_height(png_ptr,info_ptr);
+      const size_t pitch = png_get_rowbytes(png_ptr, info_ptr);
 
-    png_bytepp rows = png_get_rows(png_ptr, info_ptr);
-    for( unsigned int r = 0; r < h; r++) {
-        memcpy( img.ptr + pitch*r, rows[r], pitch );
-    }
-    png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
+      TypedImage img(w, h, PngFormat(png_ptr, info_ptr), pitch);
 
-    return img;
+      png_bytepp rows = png_get_rows(png_ptr, info_ptr);
+      for( unsigned int r = 0; r < h; r++) {
+          memcpy( img.ptr + pitch*r, rows[r], pitch );
+      }
+      png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
+
+      return img;
+
+    /*} else if (interlace_type == PNG_INTERLACE_ADAM7) {
+      
+      const int num_passes = png_set_interlace_handling(png_ptr);
+
+      png_read_update_info(png_ptr, info_ptr);
+
+      std::cout << "we need " << num_passes << " passes" << std::endl;
+
+      const size_t w = png_get_image_width(png_ptr,info_ptr);
+      const size_t h = png_get_image_height(png_ptr,info_ptr);
+      const size_t pitch = png_get_rowbytes(png_ptr, info_ptr);
+
+      TypedImage img(w, h, PngFormat(png_ptr, info_ptr), pitch);
+
+      png_bytep row_pointers[h];
+      for ( unsigned int r = 0; r < h; r++) {
+        row_pointers[h] = img.RowPtr(r);
+      }
+      png_read_image(png_ptr, row_pointers);
+
+      png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
+
+      return img;
+
+    } else {
+        throw std::runtime_error( "Unsupported PNG interlace type." );
+    }*/
+
 #else
     PANGOLIN_UNUSED(source);
     throw std::runtime_error("Rebuild Pangolin for PNG support.");
