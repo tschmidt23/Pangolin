@@ -31,13 +31,37 @@
 
 namespace py_pangolin {
 
+  template <typename T>
+  struct TypeToType {
+    using Type = T;
+  };
+
+  template <int Counter>
+  struct UnTupler {
+
+    template <typename VarT, typename ... PackedTs, typename ... UnpackedTs>
+    static void UnTuple(var_t & var, TypeToType<VarT> varT, const std::string & name, const std::tuple<PackedTs...> & packedArgs, UnpackedTs ... unpackedArgs) {
+      UnTupler<Counter - 1>::UnTuple(var, varT, name, packedArgs, std::get<Counter - 1>(packedArgs), unpackedArgs...);
+    }
+
+  };
+
+  template <>
+  struct UnTupler<0> {
+
+    template <typename VarT, typename ... PackedTs>
+    static void UnTuple(var_t & var, TypeToType<VarT>, const std::string & name, const std::tuple<PackedTs...> & /*packedArgs*/, PackedTs... unpackedArgs) {
+      var.set_attr_<VarT, PackedTs...>(name, unpackedArgs...);
+    }
+  };
+
   var_t::var_t(const std::string& ns_){
     if(ns_==""){
       throw std::invalid_argument("not support empty argument");
     }
     ns=ns_+".";
   }
-  
+
   var_t::~var_t() noexcept{}
 
   var_t::var_t(const var_t &/*other*/){}
@@ -72,14 +96,19 @@ namespace py_pangolin {
     }
     return pybind11::none();
   }
-  
-  template <typename T>
-  void var_t::set_attr_(const std::string& name, T val){
-    pangolin::Var<T> pango_var(ns+name, val);
+
+  template <typename T, typename... ArgTs>
+  void var_t::set_attr_(const std::string& name, ArgTs ... args){
+    pangolin::Var<T> pango_var(ns+name, args...);
     pango_var.Meta().gui_changed = true;
     pangolin::FlagVarChanged();
   }
-    
+
+  template <typename T, typename... ArgTs>
+  void var_t::set_attr_tuple_(const std::string& name, const std::tuple<T, ArgTs ...> & args) {
+    UnTupler<sizeof...(ArgTs) + 1>::template UnTuple(*this, TypeToType<T>(), name, args);
+  }
+
   std::vector<std::string>& var_t::get_members(){
     const int nss = ns.size();
     members.clear();
@@ -91,19 +120,33 @@ namespace py_pangolin {
     }
     return members;
   }
-  
+
   void bind_var(pybind11::module& m){
   pybind11::class_<py_pangolin::var_t>(m, "Var")
     .def(pybind11::init<const std::string &>())
     .def("__members__", &py_pangolin::var_t::get_members)
 
-    .def("__setattr__", [](var_t& v, const std::string& name, bool val, bool /*toggle*/){
+    .def("__setattr__", [](var_t& v, const std::string& name, bool val){
         v.set_attr_<bool>(name, val);
       })
+
+    .def("__setattr__", &var_t::set_attr_tuple_<bool, bool>)
+
+    .def("__setattr__", [](var_t& v, const std::string& name, int val){
+        v.set_attr_<int>(name, val);
+      })
+    .def("__setattr__", &var_t::set_attr_tuple_<int, int>)
+    .def("__setattr__", &var_t::set_attr_tuple_<int, int, int>)
 
     .def("__setattr__", [](var_t& v, const std::string& name, long val){
         v.set_attr_<long>(name, val);
       })
+
+    .def("__setattr__", [](var_t& v, const std::string& name, float val){
+        v.set_attr_<float>(name, val);
+      })
+    .def("__setattr__", &var_t::set_attr_tuple_<float, float, float>)
+    .def("__setattr__", &var_t::set_attr_tuple_<float, float, float, bool>)
 
     .def("__setattr__", [](var_t& v, const std::string& name, double val){
         v.set_attr_<double>(name, val);
@@ -112,6 +155,8 @@ namespace py_pangolin {
     .def("__setattr__", [](var_t& v, const std::string& name, const std::string& val){
         v.set_attr_<std::string>(name, val);
       })
+    .def("__setattr__", &var_t::set_attr_tuple_<double, double, double>)
+    .def("__setattr__", &var_t::set_attr_tuple_<double, double, double, bool>)
 
     .def("__setattr__", [](var_t& v, const std::string& name, std::function<void(void)> val){
         v.set_attr_<std::function<void(void)> >(name, val);

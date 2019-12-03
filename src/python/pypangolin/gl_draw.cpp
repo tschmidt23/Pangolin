@@ -28,6 +28,7 @@
 #include "gl_draw.hpp"
 #include <pangolin/gl/gldraw.h>
 #include <pybind11/eigen.h>
+#include <pybind11/stl.h>
 
 namespace py_pangolin {
 
@@ -35,6 +36,8 @@ namespace py_pangolin {
 
     m.def("glDrawAxis",
           (void (*)(float))&pangolin::glDrawAxis);
+
+    m.def("glColorHSV", &pangolin::glColorHSV);
 
     m.def("glDrawColouredCube",
           &pangolin::glDrawColouredCube,
@@ -63,7 +66,41 @@ namespace py_pangolin {
 
     m.def("glUnsetFrameOfReference", &pangolin::glUnsetFrameOfReference);
 
-    m.def("glDrawAlignedBox", (void (*)(const Eigen::AlignedBox2f &, GLenum)) &pangolin::glDrawAlignedBox<float>, pybind11::arg("box"), pybind11::arg("mode") = GL_TRIANGLE_FAN);
+    m.def("glDrawAlignedBox",
+      [](const Eigen::Vector3f min, const Eigen::Vector3f max) {
+        pangolin::glDrawAlignedBox(Eigen::AlignedBox3f(min, max));
+      },
+      pybind11::arg("min"), pybind11::arg("max"));
+    m.def("glDrawAlignedBoxPerimeter",
+      [](const Eigen::Vector3f min, const Eigen::Vector3f max) {
+        pangolin::glDrawAlignedBox(Eigen::AlignedBox3f(min, max));
+      },
+      pybind11::arg("min"), pybind11::arg("max"));
+
+    m.def("glDrawVertices", &pangolin::glDrawPoints<float, 2, std::allocator<float> >);
+    m.def("glDrawVertices", &pangolin::glDrawPoints<float, 3, std::allocator<float> >);
+    m.def("glDrawVertices", &pangolin::glDrawPoints<double, 2, std::allocator<double> >);
+    m.def("glDrawVertices", &pangolin::glDrawPoints<double, 3, std::allocator<double> >);
+
+    m.def("glDrawPoints", &pangolin::glDrawPoints<float, 2, std::allocator<float> >);
+    m.def("glDrawPoints", &pangolin::glDrawPoints<float, 3, std::allocator<float> >);
+    m.def("glDrawPoints", &pangolin::glDrawPoints<double, 2, std::allocator<double> >);
+    m.def("glDrawPoints", &pangolin::glDrawPoints<double, 3, std::allocator<double> >);
+
+    m.def("glDrawLines", &pangolin::glDrawLines<float, 2, std::allocator<float> >);
+    m.def("glDrawLines", &pangolin::glDrawLines<float, 3, std::allocator<float> >);
+    m.def("glDrawLines", &pangolin::glDrawLines<double, 2, std::allocator<double> >);
+    m.def("glDrawLines", &pangolin::glDrawLines<double, 3, std::allocator<double> >);
+
+    m.def("glDrawLineStrip", &pangolin::glDrawLineStrip<float, 2, std::allocator<float> >);
+    m.def("glDrawLineStrip", &pangolin::glDrawLineStrip<float, 3, std::allocator<float> >);
+    m.def("glDrawLineStrip", &pangolin::glDrawLineStrip<double, 2, std::allocator<double> >);
+    m.def("glDrawLineStrip", &pangolin::glDrawLineStrip<double, 3, std::allocator<double> >);
+
+    m.def("glDrawLineLoop", &pangolin::glDrawLineLoop<float, 2, std::allocator<float> >);
+    m.def("glDrawLineLoop", &pangolin::glDrawLineLoop<float, 3, std::allocator<float> >);
+    m.def("glDrawLineLoop", &pangolin::glDrawLineLoop<double, 2, std::allocator<double> >);
+    m.def("glDrawLineLoop", &pangolin::glDrawLineLoop<double, 3, std::allocator<double> >);
 
   }
 
