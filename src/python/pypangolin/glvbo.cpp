@@ -32,6 +32,8 @@ namespace py_pangolin {
 
   void bind_glvbo(pybind11::module &m){
 
+    m.def("MakeTriangleStripIboForVbo", (pangolin::GlBuffer (*)(int, int))&pangolin::MakeTriangleStripIboForVbo, pybind11::arg("w"), pybind11::arg("h"), pybind11::return_value_policy::move);
+
     m.def("RenderVbo", &pangolin::RenderVbo, pybind11::arg("vbo"), pybind11::arg("mode")=GL_POINTS);
     m.def("RenderVboCbo", &pangolin::RenderVboCbo, pybind11::arg("vbo"), pybind11::arg("cbo"), pybind11::arg("draw_color")=true, pybind11::arg("mode")=GL_POINTS);
     m.def("RenderVboIbo", &pangolin::RenderVboIbo, pybind11::arg("vbo"), pybind11::arg("ibo"), pybind11::arg("draw_mesh")=true, pybind11::arg("mode")=GL_TRIANGLE_STRIP);

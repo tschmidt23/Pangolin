@@ -39,6 +39,15 @@ namespace py_pangolin {
 
     m.def("glColorHSV", &pangolin::glColorHSV);
 
+    m.def("glDrawCirclePerimeter", (void (*)(float, float, float))&pangolin::glDrawCirclePerimeter);
+    m.def("glDrawCirclePerimeter", (void (*)(const Eigen::Vector2d &, double))&pangolin::glDrawCirclePerimeter);
+
+    m.def("glDrawRect", &pangolin::glDrawRect);
+    m.def("glDrawRectPerimeter", &pangolin::glDrawRectPerimeter);
+
+    m.def("glDrawCircle", (void (*)(float, float, float))&pangolin::glDrawCirclePerimeter);
+    m.def("glDrawCircle", (void (*)(const Eigen::Vector2d &, double))&pangolin::glDrawCirclePerimeter);
+
     m.def("glDrawColouredCube",
           &pangolin::glDrawColouredCube,
           pybind11::arg("axis_min") = -0.5f,
