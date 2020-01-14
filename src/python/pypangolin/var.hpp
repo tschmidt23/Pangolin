@@ -29,12 +29,25 @@
 
 #include <pybind11/pybind11.h>
 #include <pangolin/var/var.h>
+#include <pangolin/var/varvaluegeneric.h>
 #include <Python.h>
 
 namespace py_pangolin {
 
 
   void bind_var(pybind11::module& m);
+
+  // class meta_var_t
+  // {
+  // public:
+  //   meta_var_t(var_t & var) : var(var) {}
+  //   virtual ~meta_var_t() noexcept;
+  //
+  //   pybind11::object get_attr(const std::string &name);
+  //
+  // private:
+  //   var_t & var;
+  // };
 
   class var_t
   {
@@ -50,6 +63,9 @@ namespace py_pangolin {
     void set_attr_tuple_(const std::string& name, const std::tuple<T, ArgTs ...> & args);
 
     std::vector<std::string>& get_members();
+
+    pangolin::VarMeta & get_meta(const std::string &name);
+
   protected:
     var_t(const var_t &other);
     var_t(var_t &&other) noexcept;
@@ -59,4 +75,5 @@ namespace py_pangolin {
     std::vector<std::string> members;
     std::string ns;
   };
+
 }  // py_pangolin

@@ -97,6 +97,25 @@ namespace py_pangolin {
     return pybind11::none();
   }
 
+  pangolin::VarMeta & var_t::get_meta(const std::string &name) {
+    pangolin::VarState::VarStoreContainer::iterator i = pangolin::VarState::I().vars.find(ns+name);
+    if(i != pangolin::VarState::I().vars.end()) {
+      return i->second->Meta();
+    }
+  }
+
+  class var_meta_t {
+  public:
+    var_meta_t(var_t & var) : var(var) {}
+
+    pangolin::VarMeta & get_attr_(const std::string& name) {
+      return var.get_meta(name);
+    }
+
+  private:
+    var_t & var;
+  };
+
   template <typename T, typename... ArgTs>
   void var_t::set_attr_(const std::string& name, ArgTs ... args){
     pangolin::Var<T> pango_var(ns+name, args...);
@@ -122,6 +141,12 @@ namespace py_pangolin {
   }
 
   void bind_var(pybind11::module& m){
+  pybind11::class_<py_pangolin::var_meta_t>(m, "_VarMeta")
+    .def("__getattr__", &py_pangolin::var_meta_t::get_attr_);
+
+  pybind11::class_<pangolin::VarMeta>(m, "VarMeta")
+    .def_readwrite("gui_changed", &pangolin::VarMeta::gui_changed);
+
   pybind11::class_<py_pangolin::var_t>(m, "Var")
     .def(pybind11::init<const std::string &>())
     .def("__members__", &py_pangolin::var_t::get_members)
@@ -162,6 +187,8 @@ namespace py_pangolin {
         v.set_attr_<std::function<void(void)> >(name, val);
       })
 
-    .def("__getattr__", &py_pangolin::var_t::get_attr);
+    .def("__getattr__", &py_pangolin::var_t::get_attr)
+
+    .def("Meta", &py_pangolin::var_t::get_meta, pybind11::return_value_policy::reference);
   }
 }  // py_pangolin
