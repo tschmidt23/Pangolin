@@ -27,6 +27,7 @@
 
 #include "datalog.hpp"
 
+#include <pybind11/eigen.h>
 #include <pybind11/stl.h>
 #include <pangolin/plot/datalog.h>
 
@@ -56,7 +57,7 @@ namespace py_pangolin {
       .def("DimData", &pangolin::DataLogBlock::DimData)
       .def("Dimensions", &pangolin::DataLogBlock::Dimensions)
       .def("Sample", &pangolin::DataLogBlock::Sample)
-      .def("StartId", &pangolin::DataLogBlock::StartId);    
+      .def("StartId", &pangolin::DataLogBlock::StartId);
 
     pybind11::class_<pangolin::DataLog>(m, "DataLog")
       .def(pybind11::init<unsigned int>(), pybind11::arg("block_samples_alloc")=10000)
@@ -79,7 +80,10 @@ namespace py_pangolin {
       .def("FirstBlock", &pangolin::DataLog::FirstBlock)
       .def("LastBlock", &pangolin::DataLog::LastBlock)
       .def("Samples", &pangolin::DataLog::Samples)
-      .def("Sample", &pangolin::DataLog::Sample)
+      .def("Sample", [](const pangolin::DataLog & log, const int n) {
+          const float * data = log.Sample(n);
+          return Eigen::Map<const Eigen::Matrix<float, Eigen::Dynamic, 1> >(data, log.FirstBlock()->Dimensions());
+      })
       .def("Stats", &pangolin::DataLog::Stats);
   }
 
