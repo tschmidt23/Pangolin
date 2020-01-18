@@ -51,6 +51,7 @@ namespace py_pangolin {
         pybind11::buffer_info info = b.request();
         texture.Upload(info.ptr, data_format, type);
       })
+      .def("LoadFromFile", &pangolin::GlTexture::LoadFromFile, pybind11::arg("filename"), pybind11::arg("sampling_linear") = true)
       .def("Download", [](pangolin::GlTexture & texture, pybind11::buffer b, GLenum data_layout, GLenum data_type) {
         pybind11::buffer_info info = b.request();
         if (!is_packed(info)) {
@@ -61,6 +62,7 @@ namespace py_pangolin {
       .def("Save", &pangolin::GlTexture::Save, pybind11::arg("filename"), pybind11::arg("top_line_first")=true)
       .def("RenderToViewport", (void (pangolin::GlTexture::*)() const)&pangolin::GlTexture::RenderToViewport)
       .def("RenderToViewportFlipY", &pangolin::GlTexture::RenderToViewportFlipY)
+      .def("RenderToViewportFlipXFlipY", &pangolin::GlTexture::RenderToViewportFlipXFlipY)
       .def("SetNearestNeighbour", &pangolin::GlTexture::SetNearestNeighbour);
 
     pybind11::class_<pangolin::GlRenderBuffer>(m, "GlRenderBuffer")
