@@ -63,7 +63,9 @@ namespace py_pangolin {
       .def("RenderToViewport", (void (pangolin::GlTexture::*)() const)&pangolin::GlTexture::RenderToViewport)
       .def("RenderToViewportFlipY", &pangolin::GlTexture::RenderToViewportFlipY)
       .def("RenderToViewportFlipXFlipY", &pangolin::GlTexture::RenderToViewportFlipXFlipY)
-      .def("SetNearestNeighbour", &pangolin::GlTexture::SetNearestNeighbour);
+      .def("SetNearestNeighbour", &pangolin::GlTexture::SetNearestNeighbour)
+      .def_readwrite("width", &pangolin::GlTexture::width)
+      .def_readwrite("height", &pangolin::GlTexture::height);
 
     pybind11::class_<pangolin::GlRenderBuffer>(m, "GlRenderBuffer")
       .def(pybind11::init<GLint, GLint, GLint>(), pybind11::arg("width")=0, pybind11::arg("height")=0, pybind11::arg("internal_format") = GL_DEPTH_COMPONENT24)
